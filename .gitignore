@@ -1,0 +1,80 @@
+# Node / JavaScript
+node_modules/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+/.vercel/
+
+# Vite cache
+.vite/
+.vitepress/dist/
+
+# Production
+/.parcel-cache/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Environment files
+.env
+.env.*.local
+.env.local
+
+# TypeScript
+*.tsbuildinfo
+
+# Testing
+coverage/
+.nyc_output/
+
+# Editor directories and files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Misc caches
+.cache/
+.eslintcache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+
+# Storybook
+.storybook/
+
+# Optional: local build artifacts
+*.local
+
+# Ignore lockfile caches created by some tools (but do not ignore main lockfiles)
+# .pnp.cjs
+
+# Ignore logs from Windows
+ehthumbs.db
+Icon?
+
+# Vercel/Netlify functions cache
+.netlify/
+.vercel_build_output/
+
+# End of file
