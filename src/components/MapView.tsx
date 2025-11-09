@@ -12,43 +12,27 @@ import campusMap from "figma:asset/d564733cd877ea35e0b17d1bd9f3cf3fe991ff3c.png"
 const buildings = [
   {
     id: 1,
-    name: "第1講義棟",
+    name: "セブンイレブン前",
     umbrellas: 12,
     maxUmbrellas: 20,
-    location: "正門近く",
-    mapPosition: { top: "68%", left: "31%" }, // 関係図に基づく位置
+    location: "浄水間バス乗り場",
+    mapPosition: { top: "58%", left: "41%" }, // 関係図に基づく位置
   },
   {
     id: 2,
-    name: "第2講義棟",
+    name: "人工知能研究棟",
     umbrellas: 5,
     maxUmbrellas: 15,
-    location: "図書館横",
-    mapPosition: { top: "56%", left: "53%" },
+    location: "11号館1階",
+    mapPosition: { top: "51%", left: "62%" },
   },
   {
     id: 3,
-    name: "第3講義棟",
+    name: "8号館入口",
     umbrellas: 18,
     maxUmbrellas: 20,
-    location: "学生食堂近く",
-    mapPosition: { top: "44%", left: "68%" },
-  },
-  {
-    id: 4,
-    name: "学生会館",
-    umbrellas: 3,
-    maxUmbrellas: 10,
-    location: "中央広場",
-    mapPosition: { top: "54%", left: "35%" },
-  },
-  {
-    id: 5,
-    name: "図書館",
-    umbrellas: 8,
-    maxUmbrellas: 15,
-    location: "キャンパス東側",
-    mapPosition: { top: "40%", left: "48%" },
+    location: "8号館1階",
+    mapPosition: { top: "45%", left: "52%" },
   },
 ];
 
