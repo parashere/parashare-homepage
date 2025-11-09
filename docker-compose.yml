@@ -1,25 +1,11 @@
+version: "3.8"
+
 services:
   website:
     build:
       context: .
       dockerfile: Dockerfile
-    working_dir: /usr/src/app/website
+    container_name: parashare-homepage-website-1
     ports:
       - "127.0.0.1:3000:4173"
-    volumes:
-      # ソースコードはホストからマウント
-      - .:/usr/src/app
-      # node_modules は Linux 用を volume に保持（ホストと分離）
-      - website-node_modules:/usr/src/app/website/node_modules
-    networks:
-      - microfrontends
-    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
-
-volumes:
-  website-node_modules:
-    driver: local
-    name: website-node_modules
-
-networks:
-  microfrontends:
-    driver: bridge
+    restart: unless-stopped
