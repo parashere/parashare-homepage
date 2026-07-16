@@ -5,7 +5,7 @@ import { MapPin } from "lucide-react";
 import { motion } from "motion/react";
 
 interface Building {
-  id: number;
+  id: string;
   name: string;
   umbrellas: number;
   maxUmbrellas: number;

@@ -42,12 +42,23 @@ docker compose up --build
 ```bash
 cd website
 npm install
+cp .env.example .env
 npm run dev      # Vite 開発サーバー（http://localhost:4173）
 # または
 npm run build    # 本番ビルド（出力先: website/build/）
 ```
 
 開発サーバーのポートとホストは `vite.config.ts` の `server` 設定（`host: 0.0.0.0`, `port: 4173`）に従います。
+
+## Backend接続
+
+マップのスタンド名、収容数、在庫数はBackendの `GET /stands/list` から取得します。
+
+```env
+VITE_API_BASE_URL=http://127.0.0.1:8000
+```
+
+本番ビルドでは、本番BackendのURLを `VITE_API_BASE_URL` に設定してください。Backend側の `CORS_ALLOWED_ORIGINS` には、このWebサイトのオリジンを登録します。
 
 ## 公開・デプロイ設定
 

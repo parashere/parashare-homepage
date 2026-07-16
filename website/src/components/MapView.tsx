@@ -1,43 +1,57 @@
 "use client";
 
-import { useState } from "react";
-import { Card } from "./ui/card";
+import { useEffect, useState } from "react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "./ui/carousel";
 import { BuildingCard } from "./BuildingCard";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import campusMap from "figma:asset/d564733cd877ea35e0b17d1bd9f3cf3fe991ff3c.png";
+import { fetchStands } from "../lib/api";
 
-const buildings = [
-  {
-    id: 1,
-    name: "セブンイレブン前",
-    umbrellas: 12,
-    maxUmbrellas: 20,
-    location: "浄水間バス乗り場",
-    mapPosition: { top: "58%", left: "41%" }, // 関係図に基づく位置
-  },
-  {
-    id: 2,
-    name: "人工知能研究棟",
-    umbrellas: 5,
-    maxUmbrellas: 15,
-    location: "11号館1階",
-    mapPosition: { top: "51%", left: "62%" },
-  },
-  {
-    id: 3,
-    name: "8号館入口",
-    umbrellas: 18,
-    maxUmbrellas: 20,
-    location: "8号館1階",
-    mapPosition: { top: "45%", left: "52%" },
-  },
+const mapPositions = [
+  { top: "58%", left: "41%" },
+  { top: "51%", left: "62%" },
+  { top: "45%", left: "52%" },
 ];
+
+interface Building {
+  id: string;
+  name: string;
+  umbrellas: number;
+  maxUmbrellas: number;
+  location: string;
+  mapPosition: { top: string; left: string };
+}
 
 export function MapView() {
   const [scale, setScale] = useState(1);
+  const [buildings, setBuildings] = useState<Building[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchStands(controller.signal)
+      .then((stands) => {
+        setBuildings(
+          stands.map((stand, index) => ({
+            id: stand.stand_id,
+            name: stand.name,
+            umbrellas: stand.available,
+            maxUmbrellas: stand.capacity,
+            location: stand.name,
+            mapPosition: mapPositions[index] || { top: "50%", left: "50%" },
+          })),
+        );
+        setError(null);
+      })
+      .catch((reason: unknown) => {
+        if (!controller.signal.aborted) {
+          setError(reason instanceof Error ? reason.message : "スタンド情報を取得できませんでした");
+        }
+      });
+    return () => controller.abort();
+  }, []);
   
   // ズームレベルに応じて詳細情報を表示
   const showDetails = scale > 1.5;
@@ -46,6 +60,11 @@ export function MapView() {
     <div className="flex flex-col h-full">
       {/* マップエリア */}
       <div className="relative flex-1 overflow-hidden bg-gradient-to-br from-white via-gray-50 to-gray-100">
+        {error && (
+          <div className="absolute top-16 left-4 right-4 z-20 rounded-lg bg-white p-3 text-center text-sm text-red-700 shadow-md">
+            {error}
+          </div>
+        )}
         <TransformWrapper
           initialScale={1}
           minScale={1}
@@ -104,7 +123,7 @@ export function MapView() {
                   />
                   
                   {/* マップ上のマーカー */}
-                  {buildings.map((building) => (
+                  {buildings.map((building, index) => (
                     <motion.div
                       key={building.id}
                       className="absolute transform -translate-x-1/2 -translate-y-1/2"
@@ -114,7 +133,7 @@ export function MapView() {
                       }}
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      transition={{ delay: building.id * 0.1 }}
+                      transition={{ delay: index * 0.1 }}
                     >
                       {/* パルスアニメーション */}
                       <motion.div
@@ -170,6 +189,9 @@ export function MapView() {
       {/* カルーセルエリア */}
       <div className="relative bg-[#B81C22] px-4 py-5">
         <div className="relative">
+          {!error && buildings.length === 0 && (
+            <p className="py-4 text-center text-sm text-white">スタンド情報を読み込み中...</p>
+          )}
           <Carousel
             opts={{
               align: "start",
