@@ -4,16 +4,14 @@ import { useEffect, useState } from "react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "./ui/carousel";
 import { BuildingCard } from "./BuildingCard";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
-import { ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
+import { ZoomIn, ZoomOut, LocateFixed, Navigation, Umbrella, Activity, RotateCcw, ArrowUpRight } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import campusMap from "figma:asset/d564733cd877ea35e0b17d1bd9f3cf3fe991ff3c.png";
-import { fetchStands } from "../lib/api";
+import { fetchPublicDashboard, fetchStands, type PublicDashboard } from "../lib/api";
 
-const mapPositions = [
-  { top: "58%", left: "41%" },
-  { top: "51%", left: "62%" },
-  { top: "45%", left: "52%" },
-];
+const mapPositions: Record<string, { top: string; left: string }> = {
+  "11号館": { top: "51%", left: "59.3%" },
+};
 
 interface Building {
   id: string;
@@ -27,44 +25,66 @@ interface Building {
 export function MapView() {
   const [scale, setScale] = useState(1);
   const [buildings, setBuildings] = useState<Building[]>([]);
+  const [dashboard, setDashboard] = useState<PublicDashboard | null>(null);
+  const [standsLoaded, setStandsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
-    fetchStands(controller.signal)
-      .then((stands) => {
-        setBuildings(
-          stands.map((stand, index) => ({
-            id: stand.stand_id,
-            name: stand.name,
-            umbrellas: stand.available,
-            maxUmbrellas: stand.capacity,
-            location: stand.name,
-            mapPosition: mapPositions[index] || { top: "50%", left: "50%" },
-          })),
-        );
-        setError(null);
-      })
-      .catch((reason: unknown) => {
-        if (!controller.signal.aborted) {
-          setError(reason instanceof Error ? reason.message : "スタンド情報を取得できませんでした");
-        }
-      });
-    return () => controller.abort();
+    const load = () => {
+      fetchStands(controller.signal)
+        .then((stands) => {
+          setBuildings(
+            stands.map((stand) => ({
+              id: stand.stand_id,
+              name: stand.name,
+              umbrellas: stand.available,
+              maxUmbrellas: stand.capacity,
+              location: stand.name,
+              mapPosition: mapPositions[stand.name] || { top: "50%", left: "50%" },
+            })),
+          );
+          setError(null);
+          setStandsLoaded(true);
+        })
+        .catch((reason: unknown) => {
+          if (!controller.signal.aborted) {
+            setError(reason instanceof Error && /\(\d{3}\)/.test(reason.message) ? reason.message : "スタンド情報を取得できませんでした");
+            setStandsLoaded(true);
+          }
+        });
+      fetchPublicDashboard(controller.signal).then(setDashboard).catch(() => undefined);
+    };
+    load();
+    const timer = window.setInterval(load, 30_000);
+    return () => { window.clearInterval(timer); controller.abort(); };
   }, []);
   
   // ズームレベルに応じて詳細情報を表示
   const showDetails = scale > 1.5;
+  const available = dashboard?.available ?? buildings.reduce((sum, building) => sum + building.umbrellas, 0);
+  const capacity = dashboard?.total_capacity ?? buildings.reduce((sum, building) => sum + building.maxUmbrellas, 0);
+  const stockRate = capacity ? Math.round(available / capacity * 100) : 0;
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="map-view">
+      <div className="section-heading">
+        <div><span className="section-kicker">NEARBY STANDS</span><h2>傘を探す</h2></div>
+        <span className="availability-pill"><span />リアルタイム</span>
+      </div>
+      <section className="live-overview">
+        <div className="live-primary">
+          <span className="live-primary-icon"><Umbrella size={22} /></span>
+          <div><small>今すぐ借りられる傘</small><strong>{available}<em>本</em></strong></div>
+          <span className="stock-rate">{stockRate}%</span>
+        </div>
+        <div className="live-metrics">
+          <div><Activity size={15} /><span>貸出中</span><strong>{dashboard?.active_rentals ?? "—"}<small>本</small></strong></div>
+          <div><ArrowUpRight size={15} /><span>今日の利用</span><strong>{dashboard ? dashboard.rentals_today + dashboard.returns_today : "—"}<small>回</small></strong></div>
+        </div>
+      </section>
       {/* マップエリア */}
-      <div className="relative flex-1 overflow-hidden bg-gradient-to-br from-white via-gray-50 to-gray-100">
-        {error && (
-          <div className="absolute top-16 left-4 right-4 z-20 rounded-lg bg-white p-3 text-center text-sm text-red-700 shadow-md">
-            {error}
-          </div>
-        )}
+      <div className="map-canvas">
         <TransformWrapper
           initialScale={1}
           minScale={1}
@@ -76,12 +96,12 @@ export function MapView() {
           {({ zoomIn, zoomOut, resetTransform }) => (
             <>
               {/* コントロールボタン */}
-              <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
+              <div className="map-controls">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => zoomIn()}
-                  className="bg-white backdrop-blur-sm border border-gray-200 text-[#B81C22] p-2.5 rounded-lg shadow-md hover:shadow-lg transition-all"
+                  className="map-control-button"
                 >
                   <ZoomIn size={18} />
                 </motion.button>
@@ -89,7 +109,7 @@ export function MapView() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => zoomOut()}
-                  className="bg-white backdrop-blur-sm border border-gray-200 text-[#B81C22] p-2.5 rounded-lg shadow-md hover:shadow-lg transition-all"
+                  className="map-control-button"
                 >
                   <ZoomOut size={18} />
                 </motion.button>
@@ -97,16 +117,17 @@ export function MapView() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => resetTransform()}
-                  className="bg-white backdrop-blur-sm border border-gray-200 text-[#B81C22] p-2.5 rounded-lg shadow-md hover:shadow-lg transition-all"
+                  className="map-control-button"
                 >
-                  <Maximize2 size={18} />
+                  <LocateFixed size={18} />
                 </motion.button>
               </div>
 
               {/* ズームレベルインジケーター */}
-              <div className="absolute top-4 left-4 z-10">
-                <div className="bg-white backdrop-blur-sm border border-gray-200 text-gray-700 px-3 py-1.5 rounded-lg shadow-md">
-                  <span className="text-xs">ズーム: {Math.round(scale * 100)}%</span>
+              <div className="map-scale">
+                <div>
+                  <Navigation size={12} />
+                  <span>{Math.round(scale * 100)}%</span>
                 </div>
               </div>
 
@@ -137,7 +158,7 @@ export function MapView() {
                     >
                       {/* パルスアニメーション */}
                       <motion.div
-                        className="absolute inset-0 bg-[#E50020] rounded-full"
+                        className="map-marker-pulse"
                         animate={{
                           scale: [1, 1.5, 1],
                           opacity: [0.3, 0, 0.3],
@@ -152,7 +173,7 @@ export function MapView() {
                       
                       {/* メインマーカー */}
                       <motion.div
-                        className="relative w-8 h-8 bg-gradient-to-br from-[#E50020] to-[#B81C22] rounded-full border-2 border-white shadow-lg flex items-center justify-center cursor-pointer"
+                        className="map-marker"
                         whileHover={{ scale: 1.15 }}
                       >
                         <span className="text-white text-xs z-10">{building.umbrellas}</span>
@@ -187,10 +208,12 @@ export function MapView() {
       </div>
 
       {/* カルーセルエリア */}
-      <div className="relative bg-[#B81C22] px-4 py-5">
+      <div className="stand-drawer">
+        <div className="stand-drawer-heading"><span>利用できるスタンド</span><small>{buildings.length}か所</small></div>
         <div className="relative">
+          {error && <div className="stand-error"><span>!</span><div><strong>{error}</strong><small>時間をおいてもう一度お試しください</small></div></div>}
           {!error && buildings.length === 0 && (
-            <p className="py-4 text-center text-sm text-white">スタンド情報を読み込み中...</p>
+            <p className="stand-empty-message">{standsLoaded ? "スタンドはただいま準備中です" : "スタンド情報を読み込み中..."}</p>
           )}
           <Carousel
             opts={{
@@ -206,9 +229,27 @@ export function MapView() {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="left-0 bg-white border-none text-[#B81C22] hover:bg-gray-50 shadow-lg" />
-            <CarouselNext className="right-0 bg-white border-none text-[#B81C22] hover:bg-gray-50 shadow-lg" />
+            <CarouselPrevious className="carousel-nav left-0" />
+            <CarouselNext className="carousel-nav right-0" />
           </Carousel>
+          {dashboard && (
+            <section className="activity-feed">
+              <div className="activity-heading"><div><Activity size={15} /><strong>最近の動き</strong></div><span>30秒ごとに更新</span></div>
+              {dashboard.recent_activity.length > 0 ? (
+                <div className="activity-list">
+                  {dashboard.recent_activity.slice(0, 4).map((activity, index) => (
+                    <div className="activity-row" key={`${activity.event_type}-${activity.occurred_at}-${index}`}>
+                      <span className={`activity-icon ${activity.event_type}`}>
+                        {activity.event_type === "rent" ? <Umbrella size={15} /> : <RotateCcw size={15} />}
+                      </span>
+                      <div><strong>{activity.event_type === "rent" ? "傘が貸し出されました" : "傘が返却されました"}</strong><small>{activity.stand_name}</small></div>
+                      <time>{new Intl.DateTimeFormat("ja-JP", { hour: "2-digit", minute: "2-digit" }).format(new Date(activity.occurred_at))}</time>
+                    </div>
+                  ))}
+                </div>
+              ) : <div className="activity-empty">今日最初の利用を待っています</div>}
+            </section>
+          )}
         </div>
       </div>
     </div>
