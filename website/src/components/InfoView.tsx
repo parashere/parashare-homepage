@@ -1,6 +1,6 @@
 "use client";
 
-import { CreditCard, MapPin, Clock, HelpCircle, BookOpen, Umbrella, ArrowDown } from "lucide-react";
+import { CreditCard, MapPin, Clock, HelpCircle, BookOpen, Umbrella, ArrowDown, ShieldCheck } from "lucide-react";
 
 export function InfoView() {
   const steps = [
@@ -45,6 +45,11 @@ export function InfoView() {
       <section className="notice-panel">
         <HelpCircle size={19} />
         <div><strong>ご利用にあたって</strong><p>傘は1人1本まで。使用後は必ずスタンドへ返却してください。破損した場合は大学窓口へご連絡ください。</p></div>
+      </section>
+
+      <section className="notice-panel">
+        <ShieldCheck size={19} />
+        <div><strong>アクセス情報の利用</strong><p>サービス改善と不正利用対策のため、閲覧日時、ページ、参照元、IPアドレス、端末・ブラウザ情報、国・地域情報を90日間保存します。ブラウザのDNT/GPC設定が有効な場合は記録しません。</p></div>
       </section>
     </div>
   );

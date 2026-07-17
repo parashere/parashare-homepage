@@ -1,15 +1,21 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
 import { MapView } from "./components/MapView";
 import { WeatherView } from "./components/WeatherView";
 import { InfoView } from "./components/InfoView";
 import { MapIcon, CloudRain, Info, Umbrella, MapPin } from "lucide-react";
+import { recordPageAccess } from "./lib/api";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("map");
 
+  useEffect(() => {
+    recordPageAccess();
+  }, []);
+
   return (
     <div className="mobile-app-shell">
+      <p className="sr-only">中京大学豊田キャンパスの無料傘シェアリングサービス PARASHARE。傘の在庫、設置場所、天気、利用方法を確認できます。</p>
       <header className="app-header">
         <div className="app-brand">
           <span className="app-brand-mark"><Umbrella size={20} strokeWidth={2.3} /></span>

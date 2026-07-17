@@ -53,3 +53,27 @@ export async function fetchPublicDashboard(signal?: AbortSignal): Promise<Public
   const payload = (await response.json()) as ApiResponse<PublicDashboard>;
   return payload.data;
 }
+
+export function recordPageAccess(): void {
+  const privacyNavigator = navigator as Navigator & { globalPrivacyControl?: boolean };
+  if (privacyNavigator.globalPrivacyControl || navigator.doNotTrack === "1") return;
+
+  const payload = JSON.stringify({
+    path: `${window.location.pathname}${window.location.search}`,
+    referrer: document.referrer,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    screen_width: window.screen.width,
+    screen_height: window.screen.height,
+  });
+  const endpoint = `${API_BASE_URL}/public/access`;
+  if (navigator.sendBeacon) {
+    navigator.sendBeacon(endpoint, new Blob([payload], { type: "application/json" }));
+    return;
+  }
+  void fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: payload,
+    keepalive: true,
+  });
+}
