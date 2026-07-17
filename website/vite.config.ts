@@ -53,6 +53,18 @@
     build: {
       target: 'esnext',
       outDir: 'build',
+      rollupOptions: {
+        input: {
+          main: path.resolve(__dirname, 'index.html'),
+          map: path.resolve(__dirname, 'map/index.html'),
+          weather: path.resolve(__dirname, 'weather/index.html'),
+          howToUse: path.resolve(__dirname, 'how-to-use/index.html'),
+          locationToyota: path.resolve(__dirname, 'locations/toyota-campus/index.html'),
+          faq: path.resolve(__dirname, 'faq/index.html'),
+          about: path.resolve(__dirname, 'about/index.html'),
+          news: path.resolve(__dirname, 'news/index.html'),
+        },
+      },
     },
   server: {
     host: '0.0.0.0',
