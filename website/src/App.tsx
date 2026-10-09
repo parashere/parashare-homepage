@@ -63,7 +63,7 @@ function SiteHeader() {
 }
 
 function SiteFooter() {
-  return <footer className="site-footer"><div className="site-footer-main"><a className="site-logo footer-logo" href="/"><span><Umbrella size={22} /></span><div><strong>PARASHARE</strong><small>雨の日を、もっと身軽に。</small></div></a><nav aria-label="フッターナビゲーション">{navigation.map((item) => <a key={item.href} href={item.href}>{item.label}</a>)}</nav></div><div className="site-footer-bottom"><span>中京大学 豊田キャンパス</span><span>© 2026 PARASHARE</span></div></footer>;
+  return <footer className="site-footer"><div className="site-footer-main"><a className="site-logo footer-logo" href="/"><span><Umbrella size={22} /></span><div><strong>PARASHARE</strong><small>雨の日を、もっと身軽に。</small></div></a><nav aria-label="フッターナビゲーション">{navigation.map((item) => <a key={item.href} href={item.href}>{item.label}</a>)}</nav></div><div className="site-footer-bottom"><span>中京大学 豊田キャンパス</span><a href="/privacy/">プライバシーポリシー</a><span>© 2026 PARASHARE</span></div></footer>;
 }
 
 function LandingPage() {

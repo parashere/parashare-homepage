@@ -63,6 +63,7 @@
           faq: path.resolve(__dirname, 'faq/index.html'),
           about: path.resolve(__dirname, 'about/index.html'),
           news: path.resolve(__dirname, 'news/index.html'),
+          privacy: path.resolve(__dirname, 'privacy/index.html'),
         },
       },
     },
